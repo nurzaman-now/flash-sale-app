@@ -23,7 +23,7 @@ class AuthController extends Controller
         ]);
         DB::commit();
 
-        return $this->responseSuccess('Registrasi berhasil', $user);
+        return $this->responseSuccess('Registrasi berhasil', $user, 201);
     }
 
     public function login(LoginRequest $request)
