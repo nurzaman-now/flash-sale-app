@@ -17,6 +17,7 @@ class CreateOrdersTable extends Migration
             $table->id();
             $table->decimal('total_amount', 12, 2);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
