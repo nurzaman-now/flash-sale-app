@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,5 +33,9 @@ Route::middleware('auth:sanctum')
             Route::delete('{product}', [ProductController::class, 'destroy']);
             Route::patch('{product}/restore', [ProductController::class, 'restore']);
             Route::delete('{product}/delete-permanent', [ProductController::class, 'permanentlyDelete']);
+        });
+
+        Route::prefix('orders')->group(function () {
+            Route::post('', [OrderController::class, 'store']);
         });
     });
