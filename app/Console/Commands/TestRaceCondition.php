@@ -130,7 +130,7 @@ class TestRaceCondition extends Command
         $apiUrl = config('app.url') . '/api/orders';
         $totalConcurrentRequests = 10;
 
-        $this->info("2. Mensimulasikan {$totalConcurrentRequests} pesanan bersamaan untuk 1 item...");
+        $this->info("4. Mensimulasikan {$totalConcurrentRequests} pesanan bersamaan untuk 1 item...");
 
         $responses = Http::pool(function ($pool) use ($apiUrl, $totalConcurrentRequests, $product) {
             $requests = [];
@@ -171,6 +171,7 @@ class TestRaceCondition extends Command
         $this->error("Pesanan Gagal (HTTP 400): {$failedCount}");
         $this->line("Sisa Stok di DB: {$product->stock}");
 
+        $this->info("5. Melakukan logout...");
         if (!$this->logout()) {
             return Command::FAILURE;
         }
