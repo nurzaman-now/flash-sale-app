@@ -17,8 +17,9 @@ class OrderController extends Controller
         try {
             $totalAmount = 0;
             $itemsToCreate = [];
+            $requestData = $request->validated();
 
-            foreach ($request->validated()['items'] as $item) {
+            foreach ($requestData['items'] as $item) {
                 $product = Product::where('id', $item['product_id'])
                     ->lockForUpdate()
                     ->first();
@@ -47,7 +48,7 @@ class OrderController extends Controller
             $order->items()->createMany($itemsToCreate);
             DB::commit();
 
-            return $this->responseSuccess('Order berhasil dibuat', $order);
+            return $this->responseSuccess('Order berhasil dibuat', $order, 201);
         } catch (Exception $e) {
             DB::rollBack();
             throw new Exception('Order gagal dibuat');
