@@ -1,64 +1,93 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# Task 1 - Flash Sale REST API (Laravel)
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API toko online sederhana yang dibuat dengan **Laravel** untuk menangani transaksi pemesanan barang. Proyek ini dilengkapi dengan mekanisme pencegahan *race condition* (stok minus/overselling) pada fitur *flash sale* menggunakan teknik database row locking (`lockForUpdate`).
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🛠️ Fitur Utama
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Autentikasi (Laravel Sanctum)**: Fitur pendaftaran, masuk, dan keluar pengguna menggunakan token Bearer.
+- **Manajemen Produk**: CRUD produk lengkap dengan fitur pencarian (*search*), paginasi, serta *soft deletes*.
+- **Pemesanan & Flash Sale**:
+  - Pembuatan pesanan (*order*) beserta item detailnya (`order_items`).
+  - Pengurangan stok produk secara aman dari kendala *race condition* saat diakses secara bersamaan (konkuren).
+- **Format Respon API Seragam**: Penanganan error dan format JSON respon yang konsisten di seluruh endpoint API.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🚀 Panduan Instalasi & Penggunaan
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 1. Prasyarat
+- PHP >= 8.0
+- Composer
+- Database Server (MySQL / MariaDB)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 2. Langkah Instalasi
 
-## Laravel Sponsors
+```bash
+# Masuk ke direktori task 1
+cd task-1-api
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+# Install dependensi
+composer install
 
-### Premium Partners
+# Salin file konfigurasi .env
+cp .env.example .env
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+# Generate application key
+php artisan key:generate
+```
 
-## Contributing
+Sesuaikan konfigurasi database pada file `.env`:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=flash_sale_db
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Jalankan migrasi database:
+```bash
+php artisan migrate
+```
 
-## Code of Conduct
+Jalankan server lokal:
+```bash
+php artisan serve
+```
+Aplikasi akan berjalan di `http://127.0.0.1:8000`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 📌 Daftar Endpoint API
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Autentikasi
+- `POST /api/auth/register` - Pendaftaran pengguna baru
+- `POST /api/auth/login` - Masuk dan mendapatkan token
+- `POST /api/auth/logout` - Keluar (memerlukan Auth Token)
 
-## License
+### Produk (Memerlukan Auth Token)
+- `GET /api/products` - Mengambil daftar produk (dukungan `search` & `page`)
+- `POST /api/products` - Menambahkan produk baru
+- `GET /api/products/trashed` - Mengambil daftar produk yang terhapus
+- `GET /api/products/{id}` - Menampilkan detail produk
+- `PUT /api/products/{id}` - Mengubah data produk
+- `DELETE /api/products/{id}` - Menghapus produk (*soft delete*)
+- `PATCH /api/products/{id}/restore` - Mengembalikan produk yang terhapus
+- `DELETE /api/products/{id}/delete-permanent` - Menghapus produk secara permanen
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Pemesanan (Memerlukan Auth Token)
+- `POST /api/orders` - Membuat pesanan baru (*flash sale*)
+
+---
+
+## 🧪 Pengujian Race Condition
+
+Untuk membuktikan bahwa sistem tahan terhadap kondisi persaingan (*race condition*), telah disediakan custom Artisan command:
+
+```bash
+php artisan test:race-condition
+```
+Command ini akan mensimulasikan 10 permintaan pemesanan secara bersamaan (konkuren) terhadap produk dengan stok terbatas.
